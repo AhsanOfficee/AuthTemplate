@@ -112,9 +112,18 @@ export const loginApi = async (req: Request, res: Response) => {
     await transaction.commit();
     logQuery(req, null, null, true);
 
+    // Deleting Unnecessary Data
+    delete postData.info.id
+    delete postData.info.isActiveActionDate;
+    delete postData.info.isDeleted;
+    delete postData.info.isDeletedDate;
+    delete postData.info.createdAt;
+    delete postData.info.updatedAt;
+
     res.status(STATUS_CODE.SUCCESS).json({
       status: STATUS.SUCCESS,
       msg: API_SUCCESS_RESPONSE.LOGIN_MESSAGE,
+      userDetails: postData.info,
       accessToken: generateAccessToken(
         postData.info.userCode,
         postData.info.name,

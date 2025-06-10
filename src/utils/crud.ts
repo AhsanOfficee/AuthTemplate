@@ -28,28 +28,25 @@ export const createFunction = async (
 // Function to found one data from the desire table;
 export const findOneFunction = async (
   tableName: string,
-  columnName: string,
-  columnValue: string | boolean | number,
+  whereStatement: object
 ) => {
   // console.debug(
   //   "tableName: ",
   //   tableName,
-  //   " columnName: ",
-  //   columnName,
-  //   " columnValue: ",
-  //   columnValue
+  //   " whereStatement: ",
+  //   whereStatement
   // );
 
   try {
+    (whereStatement as any)["isDeleted"] = false as boolean; // Ensure isDeleted is boolean
+
     const isExist = await db[tableName].findOne({
       order: [["id", "desc"]],
-      where: {
-        [columnName]: [columnValue],
-        isDeleted: false,
-      },
+      where: whereStatement,
       raw: true,
     });
 
+    const columnName = Object.keys(whereStatement)[0]; // Get the first key of the whereStatement object
     const msg = `${columnName.charAt(0).toUpperCase() + columnName.slice(1)} Already Exists`;
     if (isExist) return { data: isExist, msg: msg };
   } catch (error) {

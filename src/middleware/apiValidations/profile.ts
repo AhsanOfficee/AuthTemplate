@@ -27,7 +27,6 @@ export const updateApiValidation: (
       API_CONSOLE.API_REQ_FULL_ENDPOINT,
       req.originalUrl,
     );
-    console.debug("Req.body: ", req.body);
     const currentUserCode = decodeToken(req).userCode;
     const postData = req.body;
 
@@ -61,9 +60,10 @@ export const updateApiValidation: (
     }
 
     // Check does the phoneNo already exits or not
-    if (postData.phoneNo) {
+    if (postData.phoneNo || postData.phoneCode) {
       const dtls = await db.users.findOne({
         where: {
+          phoneCode: postData.phoneCode,
           phoneNo: postData.phoneNo,
           userCode: { [Op.ne]: postData.userCode },
           isDeleted: false,
@@ -101,7 +101,6 @@ export const blockApiValidation: (
       API_CONSOLE.API_REQ_FULL_ENDPOINT,
       req.originalUrl,
     );
-    console.debug("Req.body: ", req.body);
     const postData = req.body;
     if (postData.userCode === undefined) postData.userCode = [];
 
@@ -151,12 +150,12 @@ export const unBlockApiValidation: (
       API_CONSOLE.API_REQ_FULL_ENDPOINT,
       req.originalUrl,
     );
-    console.debug("Req.body: ", req.body);
     const currentUserCode = decodeToken(req).userCode;
     const postData = req.body;
 
     if (postData.userCode !== undefined) {
-      const exits = await findOneFunction("users", "userCode", currentUserCode);
+      const whereStatement = {userCode: currentUserCode};
+      const exits = await findOneFunction("users", whereStatement);
       if (!exits?.data.isActive) {
         return res.status(STATUS_CODE.BAD_INPUT).json({
           status: STATUS.FAILED,
@@ -214,7 +213,6 @@ export const deleteApiValidation: (
       API_CONSOLE.API_REQ_FULL_ENDPOINT,
       req.originalUrl,
     );
-    console.debug("Req.body: ", req.body);
     const currentUserCode = decodeToken(req).userCode;
     const postData = req.body;
     if (postData.userCode === undefined) postData.userCode = [currentUserCode];
@@ -269,7 +267,6 @@ export const changePasswordApiValidation: (
       API_CONSOLE.API_REQ_FULL_ENDPOINT,
       req.originalUrl,
     );
-    console.debug("Req.body: ", req.body);
     const currentUserCode = decodeToken(req).userCode;
     const postData = req.body;
 
@@ -288,11 +285,11 @@ export const changePasswordApiValidation: (
       });
     }
 
+    const whereStatement = {userCode: postData.userCode};
     // Check if the password is correct or not
     const ifPassword = await findOneFunction(
       "password",
-      "userCode",
-      postData.userCode,
+      whereStatement,
     );
     if (!ifPassword) {
       return res.status(STATUS_CODE.BAD_INPUT).json({

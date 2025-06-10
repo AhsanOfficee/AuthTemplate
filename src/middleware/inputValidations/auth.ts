@@ -56,7 +56,20 @@ export const signUpInputValidation = async (
         .min(8, ZOD_FIELDS.PASSWORD_MIN)
         .max(32, ZOD_FIELDS.PASSWORD_MAX)
         .regex(PASSWORD_REGEX),
-    }).parse(req.body);
+    })
+      .refine(
+        (data) => {
+          const phoneNoPresent = data.phoneNo !== undefined;
+          const phoneCodePresent = data.phoneCode !== undefined;
+
+          return phoneNoPresent === phoneCodePresent;
+        },
+        {
+          message: ZOD_FIELDS.PHONE_NO_AND_PHONE_CODE,
+          path: ["phoneNo"], // or ["phoneCode"], depends where you want the error
+        }
+      )
+      .parse(req.body);
 
     next();
   } catch (error) {
@@ -84,6 +97,11 @@ export const loginInputValidation = async (
 
     z.object({
       email: z.string().email(ZOD_FIELDS.EMAIL).optional(),
+      phoneCode: z
+        .string()
+        .min(2, ZOD_FIELDS.PHONE_CODE_MIN)
+        .max(5, ZOD_FIELDS.PHONE_CODE_MAX)
+        .optional(),
       phoneNo: z
         .number()
         .int()
@@ -96,7 +114,20 @@ export const loginInputValidation = async (
         .max(32, ZOD_FIELDS.PASSWORD_MAX)
         .regex(PASSWORD_REGEX),
       captcha: z.string().length(6, ZOD_FIELDS.CAPTCHA),
-    }).parse(req.body);
+    })
+    .refine(
+        (data) => {
+          const phoneNoPresent = data.phoneNo !== undefined;
+          const phoneCodePresent = data.phoneCode !== undefined;
+
+          return phoneNoPresent === phoneCodePresent;
+        },
+        {
+          message: ZOD_FIELDS.PHONE_NO_AND_PHONE_CODE,
+          path: ["phoneNo"], // or ["phoneCode"], depends where you want the error
+        }
+      )
+      .parse(req.body);
 
     const validateCaptcha = await decodeCaptchaToken(req);
 

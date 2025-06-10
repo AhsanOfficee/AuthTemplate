@@ -81,6 +81,7 @@ export enum ZOD_FIELDS {
   PASSWORD_MAX = "The password must be a maximin 32 characters",
   CAPTCHA = "Need Exactly 6 Characters",
   BOOLEAN = "It Must Be A True Or False",
+  PHONE_NO_AND_PHONE_CODE = "Both phoneNo and phoneCode must be provided together."
 }
 
 export enum FUNCTION_CONSOLE {

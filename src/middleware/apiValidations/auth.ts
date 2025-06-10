@@ -30,7 +30,8 @@ export const signUpApiValidation: (
 
     // Check does the email already exits or not
     if (postData.email) {
-      const exits = await findOneFunction("users", "email", postData.email);
+      const whereStatement: object = { email: postData.email };
+      const exits = await findOneFunction("users", whereStatement);
       if (exits) {
         return res.status(STATUS_CODE.CONFLICT).json({
           status: STATUS.FAILED,
@@ -40,8 +41,9 @@ export const signUpApiValidation: (
     }
 
     // Check does the phone number already exits or not
-    if (postData.phoneNo) {
-      const exits = await findOneFunction("users", "phoneNo", postData.phoneNo);
+    if (postData.phoneNo || postData.phoneCode) {
+      const whereStatement: object = { phoneNo: postData.phoneNo , phoneCode: postData.phoneCode };
+      const exits = await findOneFunction("users", whereStatement);
       if (exits) {
         return res.status(STATUS_CODE.CONFLICT).json({
           status: STATUS.FAILED,
@@ -82,7 +84,15 @@ export const loginApiValidation: (
     const exits = await db.users.findOne({
       order: [["id", "desc"]],
       where: {
-        [Op.or]: [{ email: postData.email }, { phoneNo: postData.phoneNo }],
+        [Op.or]: [
+          { email: postData.email },
+          {
+            [Op.and]: [
+              { phoneNo: postData.phoneNo },
+              { phoneCode: postData.phoneCode }
+            ]
+          }
+        ],
         isDeleted: false,
       },
       raw: true,
@@ -95,11 +105,11 @@ export const loginApiValidation: (
       });
     }
 
+    const whereStatement: object = {userCode: exits.userCode}
     // Check if the password is correct or not
     const ifPassword = await findOneFunction(
       "password",
-      "userCode",
-      exits.userCode,
+      whereStatement,
     );
     if (!ifPassword) {
       return res.status(STATUS_CODE.BAD_INPUT).json({

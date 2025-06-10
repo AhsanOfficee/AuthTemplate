@@ -71,7 +71,20 @@ export const updateInputValidation = async (
         .optional(),
       userCode: z.number().optional(),
       captcha: z.string().length(6, ZOD_FIELDS.CAPTCHA),
-    }).parse(req.body);
+    })
+      .refine(
+        (data) => {
+          const phoneNoPresent = data.phoneNo !== undefined;
+          const phoneCodePresent = data.phoneCode !== undefined;
+
+          return phoneNoPresent === phoneCodePresent;
+        },
+        {
+          message: ZOD_FIELDS.PHONE_NO_AND_PHONE_CODE,
+          path: ["phoneNo"], // or ["phoneCode"], depends where you want the error
+        }
+      )
+      .parse(req.body);
 
     const validateCaptcha = await decodeCaptchaToken(req);
 
