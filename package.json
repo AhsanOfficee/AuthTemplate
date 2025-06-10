@@ -1,0 +1,35 @@
+{
+  "name": "api_server",
+  "version": "1.0.0",
+  "main": "ecosystem.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "npx prettier --write .",
+    "build": "npx tsc",
+    "start": "npx tsc;pm2-runtime start ecosystem.config.js --env production",
+    "dev": "pm2-runtime start ecosystem.config.js --env development",
+    "local": "nodemon src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.19",
+    "body-parser": "^2.2.0",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.10",
+    "pg": "^8.16.0",
+    "sequelize": "^6.37.7",
+    "svg-captcha": "^1.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "zod": "^3.25.1"
+  }
+}

@@ -1,0 +1,33 @@
+# version: '3.8' # Specify the version of Docker Compose
+services: # Define the services to be run
+  __SERVICE_NAME__: # We will replace the value from .env from dreload.sh file
+    build: # . Will take all the config written in the Dockerfile
+      context: . # Will take all the config written in the Dockerfile
+      # args Will be use to pass .env variables in Dockerfile
+      args:
+        LANGUAGE_NAME: ${LANGUAGE_NAME}
+        LANGUAGE_VERSION: ${LANGUAGE_VERSION}
+        VOLUME_LOCATION: ${VOLUME_LOCATION}
+      # dockerfile: Dockerfile  # Specify the Dockerfile to use
+      target: ${NODE_ENV} # The build target stage from the Dockerfile
+    image: ${IMAGE_NAME}:latest  # Define your custom image name here (api_server_image)
+    container_name: ${CONTAINER_NAME} # Specify the Container Name
+    # networks: # Define the network configuration As per the original comment
+    # networks:
+    #   - default_network
+    volumes: # Mount local directories as volumes
+      - .:/${VOLUME_LOCATION} # Bind the local 'app' directory to '/app' in the container
+    ports: # Port mapping
+      - ${EXTERNAL_PORT}:${INTERNAL_PORT} # Map port 3011 on the host to port 3000 in the container
+    env_file:
+      - .env
+    restart: always # Always restart the container if it stops
+# # networks: # Define the network configuration As per the original comment
+# networks:
+# #  default:
+#    default_network:
+#     name: ${NETWORK_NAME}  # This sets the actual network name in Docker
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: ${SUBNET}

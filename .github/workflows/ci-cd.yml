@@ -1,0 +1,63 @@
+
+# Ci-CD Workflow for Deploying to EC2 - This to remember before deploying:
+# 1. Ensure the git repository is public or if it's private, add the necessary SSH keys or access tokens in the .env file.
+# 2. The EC2 instance should have Docker and Docker Compose and other required package is installed.
+# 3. Add the necessary secrets in your GitHub repository:
+
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Add SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy on EC2
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            APP_DIR="/home/$USER/projects/authTemplate"
+            REPO_URL="https://github.com/${{ github.repository }}.git"
+
+            echo "📁 Repo URL: $REPO_URL"
+            echo "📁 App Dir: $APP_DIR"
+
+            if [ -d "$APP_DIR/.git" ]; then
+              echo "🔄 Repo exists. Pulling latest code..."
+              cd "$APP_DIR"
+              git pull origin main
+            else
+              echo "📦 Repo not found. Cloning..."
+              git clone "$REPO_URL" "$APP_DIR"
+              cd "$APP_DIR"
+            fi
+
+            if [ -f "package.json" ]; then
+              echo "📦 Installing dependencies..."
+              npm install
+            fi
+
+            # Ensure .env is updated
+            echo "${{ secrets.ENV_FILE }}" > "$APP_DIR/.env"
+
+            cd "$APP_DIR"
+
+            # Ensure dreload.sh is executable
+            chmod +x dreload.sh
+
+            # Run deployment script
+            ./dreload.sh
+          EOF

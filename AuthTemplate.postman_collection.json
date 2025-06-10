@@ -1,0 +1,147 @@
+{
+  "info": {
+    "_postman_id": "6719d492-208c-47bc-b3ee-30cb645b0641",
+    "name": "AuthTemplate",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25147218",
+    "_collection_link": "https://interstellar-escape-475688.postman.co/workspace/Local-Emis-Pis~d45726c2-50d8-4bb9-a39d-5761a0467488/collection/25147218-6719d492-208c-47bc-b3ee-30cb645b0641?action=share&source=collection_link&creator=25147218"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"Ahsan\",\n    \"email\":\"ahsan@gmail.com\",\n    \"phoneCode\": \"+91\",\n    \"phoneNo\": 1234567890,\n    \"password\":\"U2FsdGVkX19jozqNDq8zpEdC3r8NJlSIqbMFyS2b9F0=\",\n    \"confirmPassword\":\"U2FsdGVkX19jozqNDq8zpEdC3r8NJlSIqbMFyS2b9F0=\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{localhost}}/auth/signUp",
+              "host": ["{{localhost}}"],
+              "path": ["auth", "signUp"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{captchaToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\":\"ahsan@gmail.com\",\n    \"phoneNo\": 1234567890,\n    \"password\":\"U2FsdGVkX19jozqNDq8zpEdC3r8NJlSIqbMFyS2b9F0=\",\n    \"captcha\": \"{{captchaValue}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{localhost}}/auth/login",
+              "host": ["{{localhost}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{Authorization}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{localhost}}/auth/logout",
+              "host": ["{{localhost}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "generate access token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{RefreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{localhost}}/auth/generate/access/token",
+              "host": ["{{localhost}}"],
+              "path": ["auth", "generate", "access", "token"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "generate captcha token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{Authorization}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{localhost}}/auth/generate/captcha/token",
+              "host": ["{{localhost}}"],
+              "path": ["auth", "generate", "captcha", "token"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Profile Read",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{Authorization}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{localhost}}/profile/read",
+              "host": ["{{localhost}}"],
+              "path": ["profile", "read"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
