@@ -14,10 +14,7 @@ export const errorHandler = async (
   error: Error | any,
   transaction?: Transaction,
 ) => {
-  console.debug(
-    COLOR_CONSOLE.DARK_GREEN,
-    FUNCTION_CONSOLE.ERROR_HANDLER_CALLED,
-  );
+  console.debug(FUNCTION_CONSOLE.ERROR_HANDLER_CALLED);
 
   if (transaction) await transaction.rollback();
 
@@ -52,10 +49,7 @@ export const throwErrorHandler = async (
   statusCode: number,
   error: Error | any,
 ) => {
-  console.debug(
-    COLOR_CONSOLE.DARK_GREEN,
-    FUNCTION_CONSOLE.THROW_ERROR_HANDLER_CALLED,
-  );
+  console.debug(FUNCTION_CONSOLE.THROW_ERROR_HANDLER_CALLED);
 
   return res.status(statusCode).json({
     status: STATUS.FAILED,

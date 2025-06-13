@@ -35,4 +35,20 @@ router.get("/logout", verifyAccessToken, verifyLogoutStatus, auth.logoutApi);
 
 router.get("/generate/captcha/token", auth.generateCaptchaTokenApi);
 
+router.post(
+  "/otp/fire",
+  verifyCaptchaToken,
+  inputValidation.otpFireInputValidation,
+  apiValidation.otpFireApiValidation,
+  auth.otpFireApi,
+);
+
+router.post(
+  "/validate/otp/change/password",
+  verifyCaptchaToken,
+  inputValidation.validateOtpChangePasswordInputValidation,
+  apiValidation.validateOtpChangePasswordApiValidation,
+  auth.validateOtpChangePasswordApi,
+);
+
 export const authRouter = router;

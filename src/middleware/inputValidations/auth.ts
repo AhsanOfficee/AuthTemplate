@@ -34,7 +34,7 @@ export const signUpInputValidation = async (
 
     z.object({
       name: z.string().min(1, ZOD_FIELDS.NAME),
-      email: z.string().email(ZOD_FIELDS.EMAIL).optional(),
+      email: z.string().email(ZOD_FIELDS.EMAIL),
       phoneCode: z
         .string()
         .min(2, ZOD_FIELDS.PHONE_CODE_MIN)
@@ -67,7 +67,7 @@ export const signUpInputValidation = async (
         {
           message: ZOD_FIELDS.PHONE_NO_AND_PHONE_CODE,
           path: ["phoneNo"], // or ["phoneCode"], depends where you want the error
-        }
+        },
       )
       .parse(req.body);
 
@@ -115,7 +115,7 @@ export const loginInputValidation = async (
         .regex(PASSWORD_REGEX),
       captcha: z.string().length(6, ZOD_FIELDS.CAPTCHA),
     })
-    .refine(
+      .refine(
         (data) => {
           const phoneNoPresent = data.phoneNo !== undefined;
           const phoneCodePresent = data.phoneCode !== undefined;
@@ -125,9 +125,99 @@ export const loginInputValidation = async (
         {
           message: ZOD_FIELDS.PHONE_NO_AND_PHONE_CODE,
           path: ["phoneNo"], // or ["phoneCode"], depends where you want the error
-        }
+        },
       )
       .parse(req.body);
+
+    const validateCaptcha = await decodeCaptchaToken(req);
+
+    if (validateCaptcha.captcha !== req.body.captcha)
+      throwErrorHandler(
+        res,
+        STATUS_CODE.BAD_INPUT,
+        API_ERROR_RESPONSE.INVALID_CAPTCHA,
+      );
+
+    next();
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const otpFireInputValidation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  console.debug(
+    COLOR_CONSOLE.DARK_GREEN,
+    API_CONSOLE.INPUT_VALIDATION_CALLED,
+    API_CONSOLE.API_REQ_METHOD,
+    req.method,
+    API_CONSOLE.API_REQ_FULL_ENDPOINT,
+    req.originalUrl,
+  );
+  console.debug("Req Body: ", req.body);
+
+  try {
+    z.object({
+      email: z.string().email(ZOD_FIELDS.EMAIL),
+      captcha: z.string().length(6, ZOD_FIELDS.CAPTCHA),
+    }).parse(req.body);
+
+    const validateCaptcha = await decodeCaptchaToken(req);
+
+    if (validateCaptcha.captcha !== req.body.captcha)
+      throwErrorHandler(
+        res,
+        STATUS_CODE.BAD_INPUT,
+        API_ERROR_RESPONSE.INVALID_CAPTCHA,
+      );
+
+    next();
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const validateOtpChangePasswordInputValidation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  console.debug(
+    COLOR_CONSOLE.DARK_GREEN,
+    API_CONSOLE.INPUT_VALIDATION_CALLED,
+    API_CONSOLE.API_REQ_METHOD,
+    req.method,
+    API_CONSOLE.API_REQ_FULL_ENDPOINT,
+    req.originalUrl,
+  );
+  console.debug("Req Body: ", req.body);
+
+  try {
+    req.body.newPassword = decryption(req.body.newPassword);
+    req.body.confirmPassword = decryption(req.body.confirmPassword);
+
+    z.object({
+      email: z.string().email(ZOD_FIELDS.EMAIL),
+      otp: z
+        .number()
+        .int()
+        .min(100000, ZOD_FIELDS.OTP)
+        .max(999999, ZOD_FIELDS.OTP),
+      captcha: z.string().length(6, ZOD_FIELDS.CAPTCHA),
+      newPassword: z
+        .string()
+        .min(8, ZOD_FIELDS.PASSWORD_MIN)
+        .max(32, ZOD_FIELDS.PASSWORD_MAX)
+        .regex(PASSWORD_REGEX),
+      confirmPassword: z
+        .string()
+        .min(8, ZOD_FIELDS.PASSWORD_MIN)
+        .max(32, ZOD_FIELDS.PASSWORD_MAX)
+        .regex(PASSWORD_REGEX),
+    }).parse(req.body);
 
     const validateCaptcha = await decodeCaptchaToken(req);
 

@@ -14,6 +14,7 @@ import {
   API_ERROR_RESPONSE,
   API_SUCCESS_RESPONSE,
   COLOR_CONSOLE,
+  OTP_TYPE,
   STATUS,
   STATUS_CODE,
 } from "../../enums/enum";
@@ -21,6 +22,11 @@ import { logValueObject } from "../../utils/typeValidation";
 import { textCaptcha } from "../../utils/captcha";
 import moment from "moment";
 import { usersLogsCreation } from "../../utils/users_logs";
+import { sendMail } from "../../utils/sendMail";
+import { forgetPasswordHtml, signUpHtml } from "../../utils/htmlFunctions";
+import { saveOtpToDatabase, updateOtpStatus } from "../../utils/otpFunctions";
+import dotenv from "dotenv";
+dotenv.config;
 
 export const signUpApi = async (req: Request, res: Response) => {
   console.debug(
@@ -61,6 +67,24 @@ export const signUpApi = async (req: Request, res: Response) => {
         transaction,
       })
       .catch(async (error: Error) => errorHandler(res, error, transaction));
+
+    // Send SignUp Mail
+    const from = process.env.FROM_SIGN_UP_EMAIL || "";
+    const to = [`${postData.name} <${postData.email}>`];
+    const subject = "Welcome to Our Platform!";
+    const { html } = await signUpHtml(
+      postData.name,
+      postData.email,
+      postData.userCode,
+    );
+    const otpResponse = await sendMail(from, to, subject, html);
+    if (!otpResponse) {
+      throwErrorHandler(
+        res,
+        STATUS_CODE.BAD_INPUT,
+        API_ERROR_RESPONSE.OTP_NOT_SENT,
+      );
+    }
 
     await transaction.commit();
     logQuery(req, null, null, true); // To verify that the transaction is completed successfully
@@ -113,7 +137,7 @@ export const loginApi = async (req: Request, res: Response) => {
     logQuery(req, null, null, true);
 
     // Deleting Unnecessary Data
-    delete postData.info.id
+    delete postData.info.id;
     delete postData.info.isActiveActionDate;
     delete postData.info.isDeleted;
     delete postData.info.isDeletedDate;
@@ -164,37 +188,6 @@ export const generateAccessTokenApi = async (req: Request, res: Response) => {
   }
 };
 
-export const generateCaptchaTokenApi = async (req: Request, res: Response) => {
-  console.debug(
-    COLOR_CONSOLE.DARK_GREEN,
-    API_CONSOLE.API_CALLED,
-    API_CONSOLE.API_REQ_METHOD,
-    req.method,
-    API_CONSOLE.API_REQ_FULL_ENDPOINT,
-    req.originalUrl,
-  );
-
-  try {
-    const captcha = textCaptcha();
-
-    if (!captcha)
-      throwErrorHandler(
-        res,
-        STATUS_CODE.BAD_INPUT,
-        API_ERROR_RESPONSE.INVALID_CAPTCHA,
-      );
-
-    res.status(STATUS_CODE.SUCCESS).json({
-      status: STATUS.SUCCESS,
-      msg: API_SUCCESS_RESPONSE.CAPTCHA_TOKEN_GENERATED_SUCCESSFULLY,
-      captchaText: captcha.text,
-      captchaToken: captcha.token,
-    });
-  } catch (error) {
-    errorHandler(res, error);
-  }
-};
-
 export const logoutApi = async (req: Request, res: Response) => {
   console.debug(
     COLOR_CONSOLE.DARK_GREEN,
@@ -228,6 +221,159 @@ export const logoutApi = async (req: Request, res: Response) => {
     res.status(STATUS_CODE.SUCCESS).json({
       status: STATUS.SUCCESS,
       msg: API_SUCCESS_RESPONSE.LOGOUT_MESSAGE,
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const generateCaptchaTokenApi = async (req: Request, res: Response) => {
+  console.debug(
+    COLOR_CONSOLE.DARK_GREEN,
+    API_CONSOLE.API_CALLED,
+    API_CONSOLE.API_REQ_METHOD,
+    req.method,
+    API_CONSOLE.API_REQ_FULL_ENDPOINT,
+    req.originalUrl,
+  );
+
+  try {
+    const captcha = textCaptcha();
+
+    if (!captcha)
+      throwErrorHandler(
+        res,
+        STATUS_CODE.BAD_INPUT,
+        API_ERROR_RESPONSE.INVALID_CAPTCHA,
+      );
+
+    res.status(STATUS_CODE.SUCCESS).json({
+      status: STATUS.SUCCESS,
+      msg: API_SUCCESS_RESPONSE.CAPTCHA_TOKEN_GENERATED_SUCCESSFULLY,
+      captchaText: captcha.text,
+      captchaToken: captcha.token,
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const otpFireApi = async (req: Request, res: Response) => {
+  console.debug(
+    COLOR_CONSOLE.DARK_GREEN,
+    API_CONSOLE.API_CALLED,
+    API_CONSOLE.API_REQ_METHOD,
+    req.method,
+    API_CONSOLE.API_REQ_FULL_ENDPOINT,
+    req.originalUrl,
+  );
+
+  try {
+    const postData = req.body;
+
+    const exits = await db.users.findOne({
+      order: [["id", "desc"]],
+      where: {
+        email: postData.email,
+        isDeleted: false,
+      },
+      raw: true,
+    });
+
+    // Send Forget Password Mail
+    const from = process.env.FROM_FORGET_PASSWORD_EMAIL || "";
+    const to = [`${exits.name} <${exits.email}>`];
+    const subject = "Forget Password - OTP Verification";
+    const { html, otp, time } = await forgetPasswordHtml();
+
+    const otpResponse = await sendMail(from, to, subject, html);
+
+    if (!otpResponse) {
+      throwErrorHandler(
+        res,
+        STATUS_CODE.BAD_INPUT,
+        API_ERROR_RESPONSE.OTP_NOT_SENT,
+      );
+    }
+
+    await saveOtpToDatabase(
+      req,
+      res,
+      exits.userCode,
+      otp,
+      OTP_TYPE.FORGET_PASSWORD,
+      time,
+    );
+
+    res.status(STATUS_CODE.SUCCESS).json({
+      status: STATUS.SUCCESS,
+      msg: API_SUCCESS_RESPONSE.OTP_SENT_SUCCESSFULLY,
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const validateOtpChangePasswordApi = async (
+  req: Request,
+  res: Response,
+) => {
+  console.debug(
+    COLOR_CONSOLE.DARK_GREEN,
+    API_CONSOLE.API_CALLED,
+    API_CONSOLE.API_REQ_METHOD,
+    req.method,
+    API_CONSOLE.API_REQ_FULL_ENDPOINT,
+    req.originalUrl,
+  );
+
+  try {
+    const transaction = await db.sequelize.transaction();
+    const postData = req.body;
+
+    // Password Hashing
+    const hash = hashing(postData.newPassword);
+    postData.saltValue = hash.salt;
+    postData.password = hash.saltedHash;
+
+    // Soft Delete Old Password
+    await db.password
+      .update(
+        {
+          isDeleted: true,
+          isDeletedDate: new Date(),
+        },
+        {
+          where: {
+            userCode: postData.userCode,
+            isDeleted: false,
+          },
+          logging: (sql: string, value: logValueObject) => {
+            logQuery(req, sql, value, false);
+          },
+          transaction,
+        },
+      )
+      .catch(async (error: Error) => errorHandler(res, error, transaction));
+
+    console.log;
+    await db.password
+      .create(postData, {
+        logging: (sql: string, value: logValueObject) => {
+          logQuery(req, sql, value, false, undefined, true);
+        },
+        transaction,
+      })
+      .catch(async (error: Error) => errorHandler(res, error, transaction));
+
+    await updateOtpStatus(req, res, postData.otpId, postData.userCode);
+
+    await transaction.commit();
+    logQuery(req, null, null, true);
+
+    res.status(STATUS_CODE.SUCCESS).json({
+      status: STATUS.SUCCESS,
+      msg: API_SUCCESS_RESPONSE.PASSWORD_UPDATED_SUCCESSFULLY,
     });
   } catch (error) {
     errorHandler(res, error);

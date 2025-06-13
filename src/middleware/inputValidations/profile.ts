@@ -57,7 +57,6 @@ export const updateInputValidation = async (
   try {
     z.object({
       name: z.string().min(1, ZOD_FIELDS.NAME).optional(),
-      email: z.string().email(ZOD_FIELDS.EMAIL).optional(),
       phoneCode: z
         .string()
         .min(2, ZOD_FIELDS.PHONE_CODE_MIN)
@@ -82,7 +81,7 @@ export const updateInputValidation = async (
         {
           message: ZOD_FIELDS.PHONE_NO_AND_PHONE_CODE,
           path: ["phoneNo"], // or ["phoneCode"], depends where you want the error
-        }
+        },
       )
       .parse(req.body);
 

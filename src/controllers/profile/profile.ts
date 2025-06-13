@@ -38,7 +38,7 @@ export const read = async (req: Request, res: Response) => {
     if (postData.isSelf) baseQuery.where.userCode = decodeToken(req).userCode;
     console.debug("baseQuery: ", baseQuery);
 
-    const { result, metadata } = await paginate(req, baseQuery, db.users, true);
+    const { result, metadata } = await paginate(req, baseQuery, db.users);
     res.status(STATUS_CODE.SUCCESS).json({
       status: STATUS.SUCCESS,
       msg: API_SUCCESS_RESPONSE.RECORD_FETCHED_SUCCESSFULLY,
@@ -68,7 +68,6 @@ export const update = async (req: Request, res: Response) => {
 
     const body = {
       name: postData.name,
-      email: postData.email,
       phoneCode: postData.phoneCode,
       phoneNo: postData.phoneNo,
     };
@@ -251,6 +250,25 @@ export const remove = async (req: Request, res: Response) => {
       )
       .catch(async (error: Error) => errorHandler(res, error, transaction));
 
+    await db.password
+      .update(
+        {
+          isDeleted: true,
+          isDeletedDate: new Date(),
+        },
+        {
+          where: {
+            userCode: { [Op.in]: postData.userCode },
+            isDeleted: false,
+          },
+          logging: (sql: string, value: logValueObject) => {
+            logQuery(req, sql, value, false);
+          },
+          transaction,
+        },
+      )
+      .catch(async (error: Error) => errorHandler(res, error, transaction));
+
     await transaction.commit();
     logQuery(req, null, null, true);
 
@@ -283,7 +301,7 @@ export const changePassword = async (req: Request, res: Response) => {
     if (postData.userCode === undefined) postData.userCode = currentUserCode;
 
     // Password Hashing
-    const hash = hashing(postData.password);
+    const hash = hashing(postData.newPassword);
     postData.saltValue = hash.salt;
     postData.password = hash.saltedHash;
 

@@ -26,6 +26,9 @@ export enum API_CONSOLE {
 export enum STATUS {
   SUCCESS = "Success",
   FAILED = "Failed",
+  PENDING = "Pending",
+  EXPIRED = "Expired",
+  VERIFIED = "Verified",
 }
 
 export enum STATUS_CODE {
@@ -50,12 +53,15 @@ export enum API_SUCCESS_RESPONSE {
   ACCOUNT_DELETED_SUCCESSFULLY = "Account Deleted Successfully",
   UPDATED_SUCCESSFULLY = "Updated Successfully",
   PASSWORD_UPDATED_SUCCESSFULLY = "Password Updated Successfully",
+  OTP_SENT_SUCCESSFULLY = "OTP Sent Successfully",
+  // OTP_VERIFIED_SUCCESSFULLY = "OTP Verified Successfully",
 }
 
 export enum API_ERROR_RESPONSE {
   PASSWORD_MISMATCH = "Password Mismatch",
   USER_NOT_FOUND = "User Not Found!",
   INVALID_USER_OR_PASSWORD = "Invalid User/Password!",
+  INVALID_PASSWORD = "Invalid Password!",
   NO_TOKEN_FOUND = "No Token Found!",
   INVALID_ACCESS_TOKEN = "Invalid Access Token!",
   INVALID_REFRESH_TOKEN = "Invalid Refresh Token!",
@@ -69,6 +75,8 @@ export enum API_ERROR_RESPONSE {
   RECORD_NOT_FOUND = "Record Not Found",
   EMAIL_ALREADY_EXISTS = "Email Already Exists",
   PHONE_NO_ALREADY_EXISTS = "Phone Number Already Exists",
+  OTP_NOT_SENT = "OTP Not Sent Successfully Please Try Again",
+  INVALID_OTP = "Invalid Otp Please Try Again",
 }
 
 export enum ZOD_FIELDS {
@@ -81,7 +89,8 @@ export enum ZOD_FIELDS {
   PASSWORD_MAX = "The password must be a maximin 32 characters",
   CAPTCHA = "Need Exactly 6 Characters",
   BOOLEAN = "It Must Be A True Or False",
-  PHONE_NO_AND_PHONE_CODE = "Both phoneNo and phoneCode must be provided together."
+  PHONE_NO_AND_PHONE_CODE = "Both phoneNo and phoneCode must be provided together.",
+  OTP = "Need Exactly 6 Digits",
 }
 
 export enum FUNCTION_CONSOLE {
@@ -92,10 +101,38 @@ export enum FUNCTION_CONSOLE {
   ERROR_HANDLER_CALLED = "Error Handel Function Called: ",
   THROW_ERROR_HANDLER_CALLED = "Throw Error Handel Function Called: ",
   GENERATE_USER_CODE_FUNCTION_CALLED = "Generate User Code Function Called: ",
+  GENERATE_CAPTCHA_FUNCTION_CALLED = "Generate Captcha Function Called: ",
+  CREATE_IN_ANY_TABLE_FUNCTION_CALLED = "Create In Any Table Function Called: ",
+  READ_FROM_ANY_TABLE_FUNCTION_CALLED = "Read From Any Table Function Called: ",
+  GENERATE_ACCESS_TOKEN_FUNCTION_CALLED = "Generate Access Token Function Called: ",
+  GENERATE_REFRESH_ACCESS_TOKEN_FUNCTION_CALLED = "Generate Refresh Access Token Captcha Function Called: ",
+  DECODE_TOKEN_FUNCTION_CALLED = "Decode Token Function Called: ",
+  DECODE_CAPTCHA_TOKEN_FUNCTION_CALLED = "Decode Captcha Token Function Called: ",
+  GENERATE_CAPTCHA_TOKEN_FUNCTION_CALLED = "Generate Captcha Token Function Called: ",
+  SIGN_UP_HTML_FUNCTION_CALLED = "Sign Up Html Function Called: ",
+  FORGET_PASSWORD_HTML_FUNCTION_CALLED = "Forget Password Html Function Called: ",
+  FILTER_LOGS_FUNCTION_CALLED = "Filter Logs Function Called: ",
+  SAVE_LOGS_FUNCTION_CALLED = "Save Logs Function Called: ",
+  SPLIt_END_POINT_FUNCTION_CALLED = "Split End Point Function Called: ",
+  SPLIT_CAMEL_CASE_FUNCTION_CALLED = "Split Camel Case And Capitalize Every First Word Function Called: ",
+  CAPITALIZE_EVERY_FIRST_WORD_FUNCTION_CALLED = "Capitalize Every First Word Function Called: ",
+  GENERATE_OTP_FUNCTION_CALLED = "Generate Otp Function Called: ",
+  IS_VALID_OTP_FUNCTION_CALLED = "Is Valid Otp Function Called: ",
+  GENERATE_UNIQUE_OTP_FUNCTION_CALLED = "Generate Unique Otp Function Called: ",
+  SAVE_OTP_FUNCTION_CALLED = "Save Otp Function Called: ",
+  FETCHED_DATA_AND_PAGINATE_FUNCTION_CALLED = "Fetched Data And Paginate Function Called: ",
+  SEND_MAIL_FUNCTION_CALLED = "Send Mail Function Called: ",
+  SAVE_USER_LOGS_FUNCTION_CALLED = "Save User Logs Function Called: ",
+  VERIFY_OTP_FUNCTION_CALLED = "Verify Otp Function Called: ",
+  UPDATE_OTP_FUNCTION_CALLED = "Update Otp Function Called: ",
 }
 
 export enum USER_TYPE {
   CONTRACTUAL_BOARD = "Contractual (Board)",
   CONTRACTUAL_AGENCY = "Contractual (Agency)",
   DEPUTATION = "Deputation",
+}
+
+export enum OTP_TYPE {
+  FORGET_PASSWORD = "forget password",
 }

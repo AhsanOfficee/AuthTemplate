@@ -1,9 +1,13 @@
+import { FUNCTION_CONSOLE } from "../enums/enum";
+
 /* 
     It will split the camel case words
     Then it will capitalize each Word
     then it will return the string;
 */
 export const splitCamelCaseAndCapitalizeEachWord = (input: string) => {
+  console.debug(FUNCTION_CONSOLE.SPLIT_CAMEL_CASE_FUNCTION_CALLED);
+
   return input
     .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before uppercase letters
     .split(" ") // Split into words
@@ -17,6 +21,8 @@ export const splitCamelCaseAndCapitalizeEachWord = (input: string) => {
     then it will return the string;
 */
 export const CapitalizeFirstCharOfEveryWord = (msg: string) => {
+  console.debug(FUNCTION_CONSOLE.CAPITALIZE_EVERY_FIRST_WORD_FUNCTION_CALLED);
+
   const newMessage = msg
     .split(" ") // Split the string into words
     .map((word) => {

@@ -10,7 +10,7 @@ services: # Define the services to be run
         VOLUME_LOCATION: ${VOLUME_LOCATION}
       # dockerfile: Dockerfile  # Specify the Dockerfile to use
       target: ${NODE_ENV} # The build target stage from the Dockerfile
-    image: ${IMAGE_NAME}:latest  # Define your custom image name here (api_server_image)
+    image: ${IMAGE_NAME}:latest # Define your custom image name here (api_server_image)
     container_name: ${CONTAINER_NAME} # Specify the Container Name
     # networks: # Define the network configuration As per the original comment
     # networks:

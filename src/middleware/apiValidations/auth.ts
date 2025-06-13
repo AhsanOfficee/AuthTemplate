@@ -8,9 +8,11 @@ import {
   API_CONSOLE,
   API_ERROR_RESPONSE,
   COLOR_CONSOLE,
+  OTP_TYPE,
   STATUS,
   STATUS_CODE,
 } from "../../enums/enum";
+import { verifyOtp } from "../../utils/otpFunctions";
 
 export const signUpApiValidation: (
   req: Request,
@@ -42,7 +44,10 @@ export const signUpApiValidation: (
 
     // Check does the phone number already exits or not
     if (postData.phoneNo || postData.phoneCode) {
-      const whereStatement: object = { phoneNo: postData.phoneNo , phoneCode: postData.phoneCode };
+      const whereStatement: object = {
+        phoneNo: postData.phoneNo,
+        phoneCode: postData.phoneCode,
+      };
       const exits = await findOneFunction("users", whereStatement);
       if (exits) {
         return res.status(STATUS_CODE.CONFLICT).json({
@@ -85,13 +90,13 @@ export const loginApiValidation: (
       order: [["id", "desc"]],
       where: {
         [Op.or]: [
-          { email: postData.email },
+          { email: postData.email || null },
           {
             [Op.and]: [
               { phoneNo: postData.phoneNo },
-              { phoneCode: postData.phoneCode }
-            ]
-          }
+              { phoneCode: postData.phoneCode },
+            ],
+          },
         ],
         isDeleted: false,
       },
@@ -105,12 +110,9 @@ export const loginApiValidation: (
       });
     }
 
-    const whereStatement: object = {userCode: exits.userCode}
+    const whereStatement: object = { userCode: exits.userCode };
     // Check if the password is correct or not
-    const ifPassword = await findOneFunction(
-      "password",
-      whereStatement,
-    );
+    const ifPassword = await findOneFunction("password", whereStatement);
     if (!ifPassword) {
       return res.status(STATUS_CODE.BAD_INPUT).json({
         status: STATUS.FAILED,
@@ -153,6 +155,102 @@ export const loginApiValidation: (
     }
 
     postData.info = exits;
+    next();
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const otpFireApiValidation: (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => any = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    console.debug(
+      COLOR_CONSOLE.DARK_GREEN,
+      API_CONSOLE.API_VALIDATION_CALLED,
+      API_CONSOLE.API_REQ_METHOD,
+      req.method,
+      API_CONSOLE.API_REQ_FULL_ENDPOINT,
+      req.originalUrl,
+    );
+    const postData = req.body;
+
+    const exits = await db.users.findOne({
+      order: [["id", "desc"]],
+      where: {
+        email: postData.email,
+        isDeleted: false,
+      },
+      raw: true,
+    });
+
+    if (!exits) {
+      return res.status(STATUS_CODE.BAD_INPUT).json({
+        status: STATUS.FAILED,
+        message: API_ERROR_RESPONSE.USER_NOT_FOUND,
+      });
+    }
+
+    next();
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export const validateOtpChangePasswordApiValidation: (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => any = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    console.debug(
+      COLOR_CONSOLE.DARK_GREEN,
+      API_CONSOLE.API_VALIDATION_CALLED,
+      API_CONSOLE.API_REQ_METHOD,
+      req.method,
+      API_CONSOLE.API_REQ_FULL_ENDPOINT,
+      req.originalUrl,
+    );
+    const postData = req.body;
+    // email:
+    // otp:
+    // newPassword:
+    // confirmPassword:
+
+    const userExists =
+      (await findOneFunction("users", { email: postData.email }))?.data ||
+      undefined;
+    if (!userExists) {
+      return res.status(STATUS_CODE.BAD_INPUT).json({
+        status: STATUS.FAILED,
+        message: API_ERROR_RESPONSE.USER_NOT_FOUND,
+      });
+    }
+
+    const isOtpVerified = await verifyOtp(
+      res,
+      userExists.userCode,
+      postData.otp,
+      OTP_TYPE.FORGET_PASSWORD,
+    );
+    if (!isOtpVerified) {
+      return res.status(STATUS_CODE.BAD_INPUT).json({
+        status: STATUS.FAILED,
+        message: API_ERROR_RESPONSE.INVALID_OTP,
+      });
+    }
+
+    if (postData.newPassword !== postData.confirmPassword) {
+      return res.status(STATUS_CODE.BAD_INPUT).json({
+        status: STATUS.FAILED,
+        message: API_ERROR_RESPONSE.PASSWORD_MISMATCH,
+      });
+    }
+
+    postData.userCode = userExists.userCode;
+    postData.otpId = isOtpVerified.id;
     next();
   } catch (error) {
     errorHandler(res, error);

@@ -3,6 +3,7 @@ import db from "../models/model";
 import { errorHandler } from "./errorHandlers";
 import { logQuery } from "./logs";
 import { logValueObject } from "./typeValidation";
+import { FUNCTION_CONSOLE } from "../enums/enum";
 
 // Function to create data in the desired table with transaction;
 export const createFunction = async (
@@ -11,6 +12,8 @@ export const createFunction = async (
   tableName: string,
   postData: object,
 ) => {
+  console.debug(FUNCTION_CONSOLE.CREATE_IN_ANY_TABLE_FUNCTION_CALLED);
+
   const transaction = await db.sequelize.transaction();
   const result = await db[tableName]
     .create(postData, {
@@ -28,15 +31,9 @@ export const createFunction = async (
 // Function to found one data from the desire table;
 export const findOneFunction = async (
   tableName: string,
-  whereStatement: object
+  whereStatement: object,
 ) => {
-  // console.debug(
-  //   "tableName: ",
-  //   tableName,
-  //   " whereStatement: ",
-  //   whereStatement
-  // );
-
+  console.debug(FUNCTION_CONSOLE.READ_FROM_ANY_TABLE_FUNCTION_CALLED);
   try {
     (whereStatement as any)["isDeleted"] = false as boolean; // Ensure isDeleted is boolean
 

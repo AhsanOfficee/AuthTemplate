@@ -3,6 +3,7 @@ import db from "../models/model";
 import { apiEndPoint } from "./logs";
 import { Op } from "sequelize";
 import { errorHandler } from "./errorHandlers";
+import { FUNCTION_CONSOLE } from "../enums/enum";
 
 export const usersLogsCreation = async (
   req: Request,
@@ -10,6 +11,8 @@ export const usersLogsCreation = async (
   userCode: Array<number | string> | number | string,
   remarks?: string,
 ) => {
+  console.debug(FUNCTION_CONSOLE.SAVE_USER_LOGS_FUNCTION_CALLED);
+
   try {
     const transaction = await db.sequelize.transaction();
 

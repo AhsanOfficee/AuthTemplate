@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { FindOptions, ModelStatic, Model } from "sequelize";
+import { FUNCTION_CONSOLE } from "../enums/enum";
 
 interface PaginationMetadata {
   limit: number;
@@ -13,6 +14,8 @@ export const paginate = async <T extends Model>(
   model: ModelStatic<T>,
   findOne: boolean = false,
 ): Promise<{ result: T | T[] | null; metadata: PaginationMetadata }> => {
+  console.debug(FUNCTION_CONSOLE.FETCHED_DATA_AND_PAGINATE_FUNCTION_CALLED);
+
   // Parse and validate query parameters
   const limit = Math.max(parseInt(String(req.query.limit)) || 10, 1);
   const currentPage = Math.max(parseInt(String(req.query.currentPage)) || 1, 1);

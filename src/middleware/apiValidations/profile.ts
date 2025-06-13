@@ -1,4 +1,4 @@
-import e, { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { errorHandler } from "../../utils/errorHandlers";
 import db from "../../models/model";
 import {
@@ -43,20 +43,6 @@ export const updateApiValidation: (
         status: STATUS.FAILED,
         message: API_ERROR_RESPONSE.USER_NOT_FOUND,
       });
-    }
-
-    // Check does the email already exits or not
-    if (postData.email) {
-      const dtls = await db.users.findOne({
-        where: {
-          email: postData.email,
-          userCode: { [Op.ne]: postData.userCode },
-          isDeleted: false,
-        },
-        raw: true,
-      });
-
-      if (dtls) exits.msg = API_ERROR_RESPONSE.EMAIL_ALREADY_EXISTS;
     }
 
     // Check does the phoneNo already exits or not
@@ -154,7 +140,7 @@ export const unBlockApiValidation: (
     const postData = req.body;
 
     if (postData.userCode !== undefined) {
-      const whereStatement = {userCode: currentUserCode};
+      const whereStatement = { userCode: currentUserCode };
       const exits = await findOneFunction("users", whereStatement);
       if (!exits?.data.isActive) {
         return res.status(STATUS_CODE.BAD_INPUT).json({
@@ -285,16 +271,13 @@ export const changePasswordApiValidation: (
       });
     }
 
-    const whereStatement = {userCode: postData.userCode};
+    const whereStatement = { userCode: postData.userCode };
     // Check if the password is correct or not
-    const ifPassword = await findOneFunction(
-      "password",
-      whereStatement,
-    );
+    const ifPassword = await findOneFunction("password", whereStatement);
     if (!ifPassword) {
       return res.status(STATUS_CODE.BAD_INPUT).json({
         status: STATUS.FAILED,
-        message: API_ERROR_RESPONSE.INVALID_USER_OR_PASSWORD,
+        message: API_ERROR_RESPONSE.INVALID_PASSWORD,
       });
     }
 
@@ -307,7 +290,7 @@ export const changePasswordApiValidation: (
     if (matchPassword === false) {
       return res.status(STATUS_CODE.BAD_INPUT).json({
         status: STATUS.FAILED,
-        message: API_ERROR_RESPONSE.INVALID_USER_OR_PASSWORD,
+        message: API_ERROR_RESPONSE.INVALID_PASSWORD,
       });
     }
 

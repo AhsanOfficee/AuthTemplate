@@ -70,6 +70,13 @@ module.exports = (sequelize: any, DataTypes: any) => {
       foreignKey: "userCode", // column name to be use as foreign key(fk) in the table
       // constraints : true
     });
+
+    // otp
+    users.hasMany(models.otp, {
+      sourceKey: "userCode", // column name to be use as primary key(pk) and the value must be primary key or unique constant of the table
+      foreignKey: "userCode", // column name to be use as foreign key(fk) in the table
+      // constraints : true
+    });
   };
 
   return users;
